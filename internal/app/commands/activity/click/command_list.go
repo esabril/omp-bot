@@ -5,17 +5,25 @@ import (
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-func (c *ActivityClickCommander) List(inputMsg *tgbotapi.Message) {
-	list := c.service.List(c.cursor, c.limit)
+func (c *clickCommander) List(inputMsg *tgbotapi.Message) {
+	pagedList, err := c.service.List(c.cursor, c.limit)
 	outputMsgText := ""
 
-	if len(list) == 0 {
+	if err != nil {
+		outputMsgText := "Oops, something went wrong: " + err.Error()
+
+		c.SendMessageToChat(tgbotapi.NewMessage(inputMsg.Chat.ID, outputMsgText), "clickCommander.List")
+
+		return
+	}
+
+	if len(pagedList) == 0 {
 		outputMsgText = fmt.Sprintf(
 			"List of models is empty. You can use /new__%s command to add new items to it",
 			ActivityClickPrefix,
 		)
 
-		c.SendMessageToChat(tgbotapi.NewMessage(inputMsg.Chat.ID, outputMsgText), "ActivityClickCommander.List")
+		c.SendMessageToChat(tgbotapi.NewMessage(inputMsg.Chat.ID, outputMsgText), "clickCommander.List")
 
 		return
 	}
@@ -23,7 +31,7 @@ func (c *ActivityClickCommander) List(inputMsg *tgbotapi.Message) {
 	outputMsgText = "List of items:\n\n"
 
 	i := c.cursor
-	for _, item := range list {
+	for _, item := range pagedList {
 		outputMsgText += fmt.Sprintf("%d: %s\n", i, item.String())
 		i++
 	}
@@ -39,7 +47,16 @@ func (c *ActivityClickCommander) List(inputMsg *tgbotapi.Message) {
 		)
 	}
 
-	total := len(c.service.List(0, 0))
+	list, err := c.service.List(0, 0)
+	if err != nil {
+		outputMsgText := "Oops, something went wrong: " + err.Error()
+
+		c.SendMessageToChat(tgbotapi.NewMessage(inputMsg.Chat.ID, outputMsgText), "clickCommander.List")
+
+		return
+	}
+
+	total := len(list)
 	if int(c.cursor+c.limit) < total {
 		buttons = append(
 			buttons,
@@ -53,5 +70,5 @@ func (c *ActivityClickCommander) List(inputMsg *tgbotapi.Message) {
 		msg.ReplyMarkup = keyboard
 	}
 
-	c.SendMessageToChat(msg, "ActivityClickCommander.List")
+	c.SendMessageToChat(msg, "clickCommander.List")
 }

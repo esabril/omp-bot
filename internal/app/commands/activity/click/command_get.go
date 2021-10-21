@@ -7,16 +7,16 @@ import (
 	"strconv"
 )
 
-func (c *ActivityClickCommander) Get(inputMsg *tgbotapi.Message) {
+func (c *clickCommander) Get(inputMsg *tgbotapi.Message) {
 	args := inputMsg.CommandArguments()
 
 	idx, err := strconv.ParseUint(args, 10, 64)
 	if err != nil {
-		log.Printf("ActivityClickCommander.Get: error parsing product index: %v\n", err)
+		log.Printf("clickCommander.Get: error parsing product index: %v\n", err)
 
 		c.SendMessageToChat(
 			tgbotapi.NewMessage(inputMsg.Chat.ID, fmt.Sprintf("Error parsing product index: %v", err)),
-			"ActivityClickCommander.Get",
+			"clickCommander.Get",
 		)
 
 		return
@@ -24,15 +24,15 @@ func (c *ActivityClickCommander) Get(inputMsg *tgbotapi.Message) {
 
 	m, err := c.service.Describe(idx)
 	if err != nil {
-		log.Printf("ActivityClickCommander.Get: error getting product by index %d: %v\n", idx, err)
+		log.Printf("clickCommander.Get: error getting product by index %d: %v\n", idx, err)
 
 		c.SendMessageToChat(
 			tgbotapi.NewMessage(inputMsg.Chat.ID, fmt.Sprintf("Error: %s", err.Error())),
-			"ActivityClickCommander.Get",
+			"clickCommander.Get",
 		)
 
 		return
 	}
 
-	c.SendMessageToChat(tgbotapi.NewMessage(inputMsg.Chat.ID, m.String()), "ActivityClickCommander.Get")
+	c.SendMessageToChat(tgbotapi.NewMessage(inputMsg.Chat.ID, m.String()), "clickCommander.Get")
 }

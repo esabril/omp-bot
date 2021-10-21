@@ -4,9 +4,9 @@ import (
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/ozonmp/omp-bot/internal/app/commands/activity"
 	"github.com/ozonmp/omp-bot/internal/app/commands/demo"
 	"github.com/ozonmp/omp-bot/internal/app/path"
-	"github.com/ozonmp/omp-bot/internal/command/activity"
 )
 
 type Commander interface {
@@ -56,7 +56,7 @@ func NewRouter(
 		bot: bot,
 		// demoCommander
 		demoCommander:     demo.NewDemoCommander(bot),
-		activityCommander: activity.NewActivityCommander(bot),
+		activityCommander: activity.NewClickCommander(bot),
 		// user
 		// access
 		// buy

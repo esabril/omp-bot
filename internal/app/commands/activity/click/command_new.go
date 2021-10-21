@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/ozonmp/omp-bot/internal/model/actvity"
-	"log"
+	"github.com/ozonmp/omp-bot/internal/model/activity"
 )
 
-func (c *ActivityClickCommander) New(inputMsg *tgbotapi.Message) {
-	var m actvity.Click
+func (c *clickCommander) New(inputMsg *tgbotapi.Message) {
+	var m activity.Click
 
 	args := inputMsg.CommandArguments()
 
@@ -26,23 +25,21 @@ func (c *ActivityClickCommander) New(inputMsg *tgbotapi.Message) {
 
 		msg.ReplyMarkup = keyboard
 
-		c.SendMessageToChat(msg, "ActivityClickCommander.New")
+		c.SendMessageToChat(msg, "clickCommander.New")
 
 		return
 	}
 
 	idx, err := c.service.Create(m)
 	if err != nil {
-		log.Panicf("ActivityClickCommander.New: error creating new item: %v", err)
-
 		msg := tgbotapi.NewMessage(inputMsg.Chat.ID, fmt.Sprintf("Error creating new item: %v", err))
 
-		c.SendMessageToChat(msg, "ActivityClickCommander.New")
+		c.SendMessageToChat(msg, "clickCommander.New")
 
 		return
 	}
 
 	msg := tgbotapi.NewMessage(inputMsg.Chat.ID, fmt.Sprintf("Item succesfully created. Index: %d", idx))
 
-	c.SendMessageToChat(msg, "ActivityClickCommander.New")
+	c.SendMessageToChat(msg, "clickCommander.New")
 }

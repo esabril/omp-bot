@@ -1,4 +1,4 @@
-package actvity
+package activity
 
 type Click struct {
 	Title string

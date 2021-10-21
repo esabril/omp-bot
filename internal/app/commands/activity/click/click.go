@@ -25,7 +25,7 @@ type ClickCommander interface {
 	Edit(inputMsg *tgbotapi.Message) // return error not implemented
 }
 
-type ActivityClickCommander struct {
+type clickCommander struct {
 	bot     *tgbotapi.BotAPI
 	service service.ClickService
 	cursor  uint64
@@ -33,7 +33,7 @@ type ActivityClickCommander struct {
 }
 
 func NewActivityClickCommander(bot *tgbotapi.BotAPI, service service.ClickService) ClickCommander {
-	return &ActivityClickCommander{
+	return &clickCommander{
 		bot:     bot,
 		service: service,
 		cursor:  0,
@@ -41,7 +41,7 @@ func NewActivityClickCommander(bot *tgbotapi.BotAPI, service service.ClickServic
 	}
 }
 
-func (c *ActivityClickCommander) SendMessageToChat(message tgbotapi.MessageConfig, sendingErrorLogCase string) {
+func (c *clickCommander) SendMessageToChat(message tgbotapi.MessageConfig, sendingErrorLogCase string) {
 	_, err := c.bot.Send(message)
 
 	if err != nil {
@@ -49,7 +49,7 @@ func (c *ActivityClickCommander) SendMessageToChat(message tgbotapi.MessageConfi
 	}
 }
 
-func (c *ActivityClickCommander) HandleCallback(callback *tgbotapi.CallbackQuery, callbackPath path.CallbackPath) {
+func (c *clickCommander) HandleCallback(callback *tgbotapi.CallbackQuery, callbackPath path.CallbackPath) {
 	switch callbackPath.CallbackName {
 	case "saveNewItem":
 		c.SaveNewItem(callback, callbackPath)
@@ -60,7 +60,7 @@ func (c *ActivityClickCommander) HandleCallback(callback *tgbotapi.CallbackQuery
 	}
 }
 
-func (c *ActivityClickCommander) HandleCommand(msg *tgbotapi.Message, commandPath path.CommandPath) {
+func (c *clickCommander) HandleCommand(msg *tgbotapi.Message, commandPath path.CommandPath) {
 	switch commandPath.CommandName {
 	case "help":
 		c.Help(msg)
@@ -76,47 +76,47 @@ func (c *ActivityClickCommander) HandleCommand(msg *tgbotapi.Message, commandPat
 	case "delete":
 		c.Delete(msg)
 	default:
-		log.Printf("ActivityClickCommander.HandleCommand: unknown command - %s", commandPath.CommandName)
+		log.Printf("clickCommander.HandleCommand: unknown command - %s", commandPath.CommandName)
 	}
 }
 
-func (c *ActivityClickCommander) SaveNewItem(callback *tgbotapi.CallbackQuery, callbackPath path.CallbackPath) {
+func (c *clickCommander) SaveNewItem(callback *tgbotapi.CallbackQuery, callbackPath path.CallbackPath) {
 	switch callbackPath.CallbackData {
 	case "cancel":
 		c.SendMessageToChat(
 			tgbotapi.NewMessage(callback.Message.Chat.ID, "Сreation of a new item canceled"),
-			"ActivityClickCommander.HandleCommand.SaveNewItem",
+			"clickCommander.HandleCommand.SaveNewItem",
 		)
 	default:
-		log.Printf("ActivityClickCommander.HandleCommand.SaveNewItem: unknown command - %s", callbackPath.CallbackData)
+		log.Printf("clickCommander.HandleCommand.SaveNewItem: unknown command - %s", callbackPath.CallbackData)
 	}
 }
 
-func (c *ActivityClickCommander) EditItem(callback *tgbotapi.CallbackQuery, callbackPath path.CallbackPath) {
+func (c *clickCommander) EditItem(callback *tgbotapi.CallbackQuery, callbackPath path.CallbackPath) {
 	switch callbackPath.CallbackData {
 	case "cancel":
 		c.SendMessageToChat(
 			tgbotapi.NewMessage(callback.Message.Chat.ID, "Item update canceled"),
-			"ActivityClickCommander.HandleCommand.EditItem",
+			"clickCommander.HandleCommand.EditItem",
 		)
 	default:
-		log.Printf("ActivityClickCommander.HandleCommand.EditItem: unknown command - %s", callbackPath.CallbackData)
+		log.Printf("clickCommander.HandleCommand.EditItem: unknown command - %s", callbackPath.CallbackData)
 	}
 }
 
-func (c *ActivityClickCommander) ModifyCursorsForNextPage() {
+func (c *clickCommander) ModifyCursorsForNextPage() {
 	c.cursor += c.limit
 }
 
-func (c *ActivityClickCommander) ModifyCursorsForPrevPage() {
+func (c *clickCommander) ModifyCursorsForPrevPage() {
 	c.cursor -= c.limit
 }
 
-func (c *ActivityClickCommander) FlushCursor() {
+func (c *clickCommander) FlushCursor() {
 	c.cursor = 0
 }
 
-func (c *ActivityClickCommander) Paginate(callback *tgbotapi.CallbackQuery, callbackPath path.CallbackPath) {
+func (c *clickCommander) Paginate(callback *tgbotapi.CallbackQuery, callbackPath path.CallbackPath) {
 	switch callbackPath.CallbackData {
 	case "prevPage":
 		c.ModifyCursorsForPrevPage()

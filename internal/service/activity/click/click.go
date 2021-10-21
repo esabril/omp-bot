@@ -3,87 +3,93 @@ package click
 import (
 	"errors"
 	"fmt"
-	model "github.com/ozonmp/omp-bot/internal/model/actvity"
+	"github.com/ozonmp/omp-bot/internal/model/activity"
 )
 
 type ClickService interface {
-	Describe(subdomainId uint64) (*model.Click, error)
-	List(cursor uint64, limit uint64) []*model.Click
-	Create(m model.Click) (uint64, error)
-	Update(subdomainId uint64, subdomain model.Click) error
-	Remove(subdomainId uint64) (bool, error)
+	Describe(clickID uint64) (*activity.Click, error)
+	List(cursor uint64, limit uint64) ([]*activity.Click, error)
+	Create(m activity.Click) (uint64, error)
+	Update(clickID uint64, click activity.Click) error
+	Remove(clickID uint64) (bool, error)
 }
 
-type ActivityClickService struct {
-	clicks []*model.Click
+type DummyClickService struct {
+	clicks []*activity.Click
 }
 
-func NewActivityClickService() *ActivityClickService {
-	return &ActivityClickService{
-		clicks: []*model.Click{{Title: "my1"}, {Title: "my2"}, {Title: "my3"}}, // TODO: remove example data
+func NewDummyClickService() *DummyClickService {
+	return &DummyClickService{
+		clicks: []*activity.Click{{Title: "my1"}, {Title: "my2"}, {Title: "my3"}}, // TODO: remove example data
 	}
 }
 
-func (s *ActivityClickService) Describe(subdomainId uint64) (*model.Click, error) {
-	if subdomainId > uint64(len(s.clicks)) {
-		return nil, errors.New(s.getOutOfRangeErrorString("can't get item", subdomainId))
+func (s *DummyClickService) Describe(clickID uint64) (*activity.Click, error) {
+	if clickID >= uint64(len(s.clicks)) {
+		return nil, errors.New(s.getOutOfRangeErrorString("can't get item", clickID))
 	}
 
-	return s.clicks[subdomainId], nil
+	return s.clicks[clickID], nil
 }
 
-func (s *ActivityClickService) List(cursor uint64, limit uint64) []*model.Click {
+func (s *DummyClickService) List(cursor uint64, limit uint64) ([]*activity.Click, error) {
 	if cursor == 0 && limit == 0 {
-		return s.clicks
+		return s.clicks, nil
 	}
 
 	l := uint64(len(s.clicks))
 
-	if cursor+limit >= l {
-		return s.clicks[cursor:]
+	if cursor >= l {
+		return nil, errors.New("out of click's list range")
 	}
 
-	return s.clicks[cursor : limit+cursor]
+	if cursor+limit >= l {
+		return s.clicks[cursor:], nil
+	}
+
+	return s.clicks[cursor : limit+cursor], nil
 }
 
-func (s *ActivityClickService) Create(m model.Click) (uint64, error) {
+func (s *DummyClickService) Create(m activity.Click) (uint64, error) {
 	s.clicks = append(s.clicks, &m)
 
 	return uint64(len(s.clicks) - 1), nil
 }
 
-func (s *ActivityClickService) Update(subdomainId uint64, subdomain model.Click) error {
+func (s *DummyClickService) Update(clickID uint64, click activity.Click) error {
 	length := uint64(len(s.clicks))
 
-	if subdomainId >= length {
-		return errors.New(s.getOutOfRangeErrorString("can't update item", subdomainId))
+	if clickID >= length {
+		return errors.New(s.getOutOfRangeErrorString("can't update item", clickID))
 	}
 
-	s.clicks[subdomainId] = &subdomain
+	s.clicks[clickID] = &click
 
 	return nil
 }
 
-func (s *ActivityClickService) Remove(subdomainId uint64) (bool, error) {
+func (s *DummyClickService) Remove(clickID uint64) (bool, error) {
 	length := uint64(len(s.clicks))
 
-	if subdomainId >= length {
-		return false, errors.New(s.getOutOfRangeErrorString("can't remove item", subdomainId))
+	if clickID >= length {
+		return false, errors.New(s.getOutOfRangeErrorString("can't remove item", clickID))
 	}
 
-	if subdomainId == 0 {
-		s.clicks = s.clicks[0:]
-	} else if subdomainId == length-1 {
-		s.clicks = s.clicks[:length-1]
-	} else {
-		s.clicks = append(s.clicks[0:subdomainId], s.clicks[subdomainId+1:]...)
-	}
+	s.clicks = append(s.clicks[0:clickID], s.clicks[clickID+1:]...)
 
 	return true, nil
 }
 
-func (s *ActivityClickService) getOutOfRangeErrorString(action string, subdomainId uint64) string {
+func (s *DummyClickService) getOutOfRangeErrorString(action string, clickID uint64) string {
 	length := len(s.clicks)
 
-	return fmt.Sprintf("%s %d: now we have only %d items — from 0 to %d", action, subdomainId, length, length-1)
+	if length == 0 {
+		return fmt.Sprintf("%s %d: list is empty", action, clickID)
+	}
+
+	if length == 1 {
+		return fmt.Sprintf("%s %d: now we have only one item with index 0", action, clickID)
+	}
+
+	return fmt.Sprintf("%s %d: now we have only %d items — from 0 to %d", action, clickID, length, length-1)
 }
